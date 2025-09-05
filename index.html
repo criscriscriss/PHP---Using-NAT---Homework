@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulación NAT Mejorada</title>
+
+  <link rel="stylesheet" href="Style.css">
+  
+</head>
+<body>
+  <h2> Simulación de NAT (Network Address Translation)</h2>
+  <p>Este simulador muestra cómo varias <b>IP privadas</b> de una casa u oficina son traducidas por un <b>router NAT</b> a una sola <b>IP pública</b> con diferentes puertos.</p>
+
+  <button class="btn" onclick="simularNAT()">Ejecutar Nueva Simulación</button>
+
+  <button class="btn" onclick="simularsinNAT()">Ejecutar Nueva Simulación sin NAT</button>
+
+  <table id="tabla">
+    <thead>
+      <tr>
+        <th>Dispositivo</th>
+        <th>IP Privada</th>
+        <th>Solicitud</th>
+        <th>IP Pública Asignada</th>
+        <th>Puerto</th>
+        <th>Respuesta</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+  function simularsinNAT() {
+    // Dispositivos posibles
+    const dispositivosPosibles = [
+      { nombre: "Laptop Oficina", solicitud: "Conectar a Teams" },
+      { nombre: "PC Escritorio", solicitud: "Abrir Google" },
+      { nombre: "Smartphone", solicitud: "Entrar a WhatsApp Web" },
+      { nombre: "Tablet", solicitud: "Revisar correo Gmail" },
+      { nombre: "Impresora WiFi", solicitud: "Enviar reporte a servidor" },
+      { nombre: "Smart TV", solicitud: "Ver Netflix" },
+      { nombre: "Servidor Local", solicitud: "Subir archivos al Drive" }
+    ];
+
+    // Selección aleatoria de dispositivos
+    let cantidad = Math.floor(Math.random() * 4) + 3;
+    let seleccionados = dispositivosPosibles.sort(() => 0.5 - Math.random()).slice(0, cantidad);
+
+    // Asignar directamente IPs públicas únicas (sin NAT)
+    seleccionados = seleccionados.map(disp => {
+      disp.ipPublica = "181.50.23." + Math.floor(Math.random() * 200 + 1);
+      return disp;
+    });
+
+    const tbody = document.querySelector("#tabla tbody");
+    tbody.innerHTML = "";
+
+    seleccionados.forEach(disp => {
+      let respuesta = "Respuesta de Internet para " + disp.solicitud;
+
+      let fila = `
+        <tr>
+          <td>${disp.nombre}</td>
+          <td>-</td> <!-- sin IP privada -->
+          <td>${disp.solicitud}</td>
+          <td>${disp.ipPublica}</td>
+          <td>-</td> <!-- sin puertos -->
+          <td>${respuesta} → entregada directamente a ${disp.nombre} (${disp.ipPublica})</td>
+        </tr>
+      `;
+      tbody.innerHTML += fila;
+    });
+  }
+</script>
+
+  <script>
+    function simularNAT() {
+      // Dispositivos que pueden aparecer en casa u oficina
+      const dispositivosPosibles = [
+        { nombre: "Laptop Oficina", solicitud: "Conectar a Teams" },
+        { nombre: "PC Escritorio", solicitud: "Abrir Google" },
+        { nombre: "Smartphone", solicitud: "Entrar a WhatsApp Web" },
+        { nombre: "Tablet", solicitud: "Revisar correo Gmail" },
+        { nombre: "Impresora WiFi", solicitud: "Enviar reporte a servidor" },
+        { nombre: "Smart TV", solicitud: "Ver Netflix" },
+        { nombre: "Servidor Local", solicitud: "Subir archivos al Drive" }
+      ];
+
+      // Generar aleatoriamente entre 3 y 6 dispositivos
+      let cantidad = Math.floor(Math.random() * 4) + 3;
+      let seleccionados = dispositivosPosibles.sort(() => 0.5 - Math.random()).slice(0, cantidad);
+
+      // Asignar IPs privadas dinámicamente (192.168.1.x)
+      seleccionados = seleccionados.map((disp, i) => {
+        disp.ip = "192.168.1." + (10 + i);
+        return disp;
+      });
+
+      const ipPublica = "181.50.23." + Math.floor(Math.random() * 100 + 1); // Cambia la IP pública también
+      let puertoInicial = 5000;
+
+      const tbody = document.querySelector("#tabla tbody");
+      tbody.innerHTML = "";
+
+      seleccionados.forEach((disp, i) => {
+        let puerto = puertoInicial + (i + 1);
+        let respuesta = "Respuesta de Internet para " + disp.solicitud;
+
+        let fila = `
+          <tr>
+            <td>${disp.nombre}</td>
+            <td>${disp.ip}</td>
+            <td>${disp.solicitud}</td>
+            <td>${ipPublica}</td>
+            <td>${puerto}</td>
+            <td>${respuesta} → entregada a ${disp.nombre} (${disp.ip})</td>
+          </tr>
+        `;
+        tbody.innerHTML += fila;
+      });
+    }
+  </script>
+
+  
+
+</body>
+</html>
