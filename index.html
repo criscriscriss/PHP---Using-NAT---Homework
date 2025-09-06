@@ -8,12 +8,48 @@
   
 </head>
 <body>
-  <h2> Simulación de NAT (Network Address Translation)</h2>
-  <p>Este simulador muestra cómo varias <b>IP privadas</b> de una casa u oficina son traducidas por un <b>router NAT</b> a una sola <b>IP pública</b> con diferentes puertos.</p>
+  <header>
+    <h2> Simulación de NAT (Network Address Translation)</h2>
+    <p>Este simulador muestra cómo varias <b>IP privadas</b> de una casa u oficina son traducidas por un <b>router NAT</b> a una sola <b>IP pública</b> con diferentes puertos.</p>
+  </header>
+  <div class="Explain">
+    <section1>
+      <h3> CON NAT</h3>
+      <p>el nat nos va a ayudar a cambiar de una red publica a una red privada</p>
+    </section1>
+
+    <section1>
+      <H3>SIN NAT</H3>
+      <p>sin el nat no vamos a poder cambiar correctamente y generaremos un error</p>
+    </section1>
+  </div>
+  
+    <div class="Comparations">
+      <h3>VENTAJAS Y DESVENTAJAS
+        <div>
+          <ul>
+            <li class="items"></li>
+            <li class="items"></li>
+            <li class="items"></li>
+          </ul>
+        </div>
+      </h3>
+    </div>
+
 
   <button class="btn" onclick="simularNAT()">Ejecutar Nueva Simulación</button>
 
   <button class="btn" onclick="simularsinNAT()">Ejecutar Nueva Simulación sin NAT</button>
+
+  <button class="btn">
+    <a href="paginadejose" target="_blank">Ver dispositivos conectados</a>
+  </button>
+
+  <div class="Animationalejo">
+
+    <p>aqui va el codigo de la animacion de Animationalejo</p>
+    
+  </div>
 
   <table id="tabla">
     <thead>
@@ -120,8 +156,6 @@
       });
     }
   </script>
-
-  
 
 </body>
 </html>
