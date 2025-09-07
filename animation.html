@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulación NAT Mejorada</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background: linear-gradient(135deg, #eef3f8 0%, #e0e7f1 100%);
+      color: #2c3e50;
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 0;
+    }
+    
+    /* Barra de navegación */
+    .navbar {
+      background: linear-gradient(90deg, #2c3e50 0%, #4a6491 100%);
+      color: white;
+      padding: 0.8rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+    
+    .logo i {
+      font-size: 1.8rem;
+      color: #27ae60;
+    }
+    
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+    
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .nav-links a:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    .nav-links a.active {
+      background: #27ae60;
+    }
+    
+    /* Contenedor principal */
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+    
+    /* Cabecera */
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+      padding: 1.5rem;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    }
+    
+    .header h2 {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+      color: #2c3e50;
+    }
+    
+    .header p {
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto;
+      color: #546e7a;
+    }
+    
+    /* Controles */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      background: #27ae60;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn:hover {
+      background: #219653;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .btn-secondary {
+      background: #4a6491;
+    }
+    
+    .btn-secondary:hover {
+      background: #3c5174;
+    }
+    
+    .btn-traffic {
+      background: #e74c3c;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    /* Visualización de red */
+    .visualization {
+      display: flex;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .network-box {
+      flex: 1;
+      min-width: 300px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .network-title {
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      color: #2c3e50;
+      text-align: center;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e0e0e0;
+    }
+    
+    .network-container {
+      height: 400px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: #f8f9fa;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Explicación */
+    .explanation {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+      padding: 2rem;
+      margin-top: 2.5rem;
+    }
+    
+    .explanation h3 {
+      color: #2c3e50;
+      margin-bottom: 1.2rem;
+      font-size: 1.5rem;
+    }
+    
+    .comparison {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+    
+    .comparison-box {
+      flex: 1;
+      min-width: 300px;
+      padding: 1.5rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+    
+    .comparison-title {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      color: #2c3e50;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: 3rem;
+      background: #2c3e50;
+      color: white;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        padding: 1rem;
+      }
+      
+      .nav-links {
+        margin-top: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      
+      .visualization {
+        flex-direction: column;
+      }
+    }
+
+    /* Partículas de tráfico */
+    .traffic-particle {
+      position: absolute;
+      width: 12px;
+      height: 12px;
+      background: #e74c3c;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 0 10px #e74c3c;
+      transition: transform 0.1s;
+    }
+    
+    /* Estado de la simulación */
+    .simulation-status {
+      padding: 1rem;
+      margin: 1rem 0;
+      border-radius: 8px;
+      background: #e8f5e9;
+      border-left: 4px solid #4caf50;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .status-error {
+      background: #ffebee;
+      border-left: 4px solid #f44336;
+    }
+    
+    /* Log de eventos */
+    .event-log {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #2c3e50;
+      color: white;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: monospace;
+      margin-top: 20px;
+    }
+    
+    .log-entry {
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #4a6491;
+    }
+    
+    .log-time {
+      color: #3498db;
+      margin-right: 10px;
+    }
+    
+    .log-device {
+      color: #2ecc71;
+    }
+    
+    .log-action {
+      color: #f1c40f;
+    }
+  </style>
+</head>
+<body>
+  <!-- Barra de navegación -->
+  <nav class="navbar">
+    <div class="logo">
+      <i class="fas fa-network-wired"></i>
+      <h1>Simulador NAT</h1>
+    </div>
+    <div class="nav-links">
+      <a href="index.html"><i class="fas fa-home"></i> Inicio</a>
+      <a href="animation.html" class="active"><i class="fas fa-play-circle"></i> Ver Animación</a>
+      <a href="#"><i class="fas fa-info-circle"></i> Acerca de</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Cabecera -->
+    <div class="header">
+      <h2>Simulación de NAT (Network Address Translation)</h2>
+      <p>Este simulador muestra gráficamente cómo funciona el NAT traduciendo direcciones IP privadas a públicas.</p>
+      
+      <!-- Estado de la simulación -->
+      <div id="simulationStatus" class="simulation-status">
+        <i class="fas fa-info-circle"></i>
+        <p>Presiona "Simular Tráfico" para iniciar la visualización del flujo de datos.</p>
+      </div>
+    </div>
+
+    <!-- Controles -->
+    <div class="controls">
+      <button class="btn" onclick="initNetwork()">
+        <i class="fas fa-sync"></i> Reiniciar Simulación
+      </button>
+      <button id="trafficBtn" class="btn btn-secondary" onclick="simulateTraffic()">
+        <i class="fas fa-play"></i> Simular Tráfico
+      </button>
+      <button class="btn btn-secondary" onclick="addDevice()">
+        <i class="fas fa-plus"></i> Añadir Dispositivo
+      </button>
+    </div>
+
+    <!-- Visualización de red -->
+    <div class="visualization">
+      <div class="network-box">
+        <h3 class="network-title"><i class="fas fa-globe-americas"></i> Red sin NAT</h3>
+        <div id="networkWithoutNAT" class="network-container"></div>
+      </div>
+      <div class="network-box">
+        <h3 class="network-title"><i class="fas fa-random"></i> Red con NAT</h3>
+        <div id="networkWithNAT" class="network-container"></div>
+      </div>
+    </div>
+
+    <!-- Log de eventos -->
+    <div class="event-log">
+      <div id="logContent">
+        <div class="log-entry">
+          <span class="log-time">[00:00]</span>
+          <span class="log-device">Sistema:</span>
+          <span class="log-action">Redes inicializadas. Presiona "Simular Tráfico" para comenzar.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explicación NAT -->
+    <div class="explanation">
+      <h3>¿Cómo funciona NAT?</h3>
+      <div class="comparison">
+        <div class="comparison-box">
+          <h4 class="comparison-title"><i class="fas fa-ban" style="color: #e74c3c;"></i> Sin NAT</h4>
+          <ul>
+            <li>Cada dispositivo necesita una IP pública única</li>
+            <li>Mayor consumo de direcciones IP públicas</li>
+            <li>Menos seguridad - dispositivos son directamente accesibles desde Internet</li>
+            <li>Comunicación directa entre dispositivos y servidores externos</li>
+          </ul>
+        </div>
+        <div class="comparison-box">
+          <h4 class="comparison-title"><i class="fas fa-check-circle" style="color: #27ae60;"></i> Con NAT</h4>
+          <ul>
+            <li>Múltiples dispositivos comparten una sola IP pública</li>
+            <li>Menor consumo de direcciones IP públicas</li>
+            <li>Mayor seguridad - dispositivos están ocultos detrás del router</li>
+            <li>El router actúa como intermediario traduciendo direcciones</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Proyecto de Ingeniería de Software - Administración de Sistemas de Información</p>
+  </footer>
+
+  <script>
+    // Variables globales
+    let networkInstances = [];
+    let deviceCount = 4;
+    let trafficInterval;
+    let isSimulating = false;
+    let logEntries = [];
+    let particleInterval;
+
+    // Inicializar la visualización de red
+    function initNetwork() {
+      // Limpiar cualquier simulación previa
+      stopTraffic();
+      removeAllParticles();
+      
+      // Limpiar logs
+      logEntries = [];
+      addLogEntry("Sistema", "Redes inicializadas. Presiona 'Simular Tráfico' para comenzar.");
+      
+      // Crear contenedores de visualización
+      const containerWithoutNAT = document.getElementById('networkWithoutNAT');
+      const containerWithNAT = document.getElementById('networkWithNAT');
+      
+      // Limpiar contenedores
+      containerWithoutNAT.innerHTML = '';
+      containerWithNAT.innerHTML = '';
+      
+      // Opciones para las redes
+      const options = {
+        nodes: {
+          shape: 'dot',
+          size: 30,
+          font: {
+            size: 14,
+            face: 'Tahoma'
+          },
+          borderWidth: 2,
+          shadow: true
+        },
+        edges: {
+          width: 2,
+          shadow: true,
+          arrows: {
+            to: { enabled: true, scaleFactor: 1 }
+          }
+        },
+        physics: {
+          stabilization: true,
+          barnesHut: {
+            gravitationalConstant: -80000,
+            springConstant: 0.001,
+            springLength: 200
+          }
+        }
+      };
+      
+      // Datos para la red
+      const devices = generateDevices(deviceCount);
+      const internetNodes = generateInternetNodes();
+      
+      // Crear red sin NAT
+      const dataWithoutNAT = createNetworkData(devices, internetNodes, false);
+      networkInstances[0] = new vis.Network(containerWithoutNAT, dataWithoutNAT, options);
+      
+      // Crear red con NAT
+      const dataWithNAT = createNetworkData(devices, internetNodes, true);
+      networkInstances[1] = new vis.Network(containerWithNAT, dataWithNAT, options);
+      
+      // Ajustar la visualización después de la inicialización
+      networkInstances[0].on("stabilizationIterationsDone", function() {
+        networkInstances[0].setOptions({ physics: false });
+      });
+      
+      networkInstances[1].on("stabilizationIterationsDone", function() {
+        networkInstances[1].setOptions({ physics: false });
+      });
+      
+      // Actualizar estado
+      updateStatus("Redes inicializadas. Presiona 'Simular Tráfico' para comenzar.", "info");
+    }
+    
+    // Generar dispositivos aleatorios
+    function generateDevices(count) {
+      const deviceTypes = ['laptop', 'desktop', 'smartphone', 'tablet', 'printer', 'server'];
+      const devices = [];
+      
+      for (let i = 0; i < count; i++) {
+        const type = deviceTypes[i % deviceTypes.length];
+        const ip = `192.168.1.${10 + i}`;
+        devices.push({
+          id: i + 1,
+          label: `${type}\n${ip}`,
+          group: type,
+          ip: ip
+        });
+      }
+      
+      return devices;
+    }
+    
+    // Generar nodos de Internet
+    function generateInternetNodes() {
+      return [
+        { id: 100, label: "Google\n8.8.8.8", group: "server" },
+        { id: 101, label: "Facebook\n31.13.64.35", group: "server" },
+        { id: 102, label: "Netflix\n52.11.123.45", group: "server" },
+        { id: 103, label: "Router ISP\n181.50.23.1", group: "router" }
+      ];
+    }
+    
+    // Crear datos de la red
+    function createNetworkData(devices, internetNodes, withNAT) {
+      const nodes = [];
+      const edges = [];
+      
+      // Agregar dispositivos locales
+      devices.forEach(device => {
+        nodes.push({
+          id: device.id,
+          label: device.label,
+          group: device.group,
+          color: getColorForDevice(device.group)
+        });
+      });
+      
+      // Agregar nodos de Internet
+      internetNodes.forEach(node => {
+        nodes.push({
+          id: node.id,
+          label: node.label,
+          group: node.group,
+          color: getColorForDevice(node.group)
+        });
+      });
+      
+      // Agregar router NAT si es necesario
+      if (withNAT) {
+        nodes.push({
+          id: 50,
+          label: "Router NAT\n192.168.1.1",
+          group: "nat",
+          color: getColorForDevice("nat")
+        });
+        
+        // Conectar dispositivos al router NAT
+        devices.forEach(device => {
+          edges.push({
+            from: device.id,
+            to: 50,
+            color: { color: '#97C2FC' },
+            label: "LAN",
+            originalColor: '#97C2FC'
+          });
+        });
+        
+        // Conectar router NAT a Internet
+        internetNodes.forEach(node => {
+          edges.push({
+            from: 50,
+            to: node.id,
+            color: { color: '#FF9999' },
+            label: "WAN",
+            originalColor: '#FF9999'
+          });
+        });
+      } else {
+        // Sin NAT: conectar dispositivos directamente a Internet
+        devices.forEach(device => {
+          internetNodes.forEach(node => {
+            // Solo conectar algunos dispositivos para no saturar la visualización
+            if (Math.random() > 0.5) {
+              edges.push({
+                from: device.id,
+                to: node.id,
+                color: { color: '#97C2FC' },
+                label: "Directo",
+                originalColor: '#97C2FC'
+              });
+            }
+          });
+        });
+      }
+      
+      return { nodes: nodes, edges: edges };
+    }
+    
+    // Obtener color según el tipo de dispositivo
+    function getColorForDevice(type) {
+      const colors = {
+        'laptop': '#9b59b6',
+        'desktop': '#3498db',
+        'smartphone': '#2ecc71',
+        'tablet': '#1abc9c',
+        'printer': '#e67e22',
+        'server': '#e74c3c',
+        'router': '#f1c40f',
+        'nat': '#f1c40f'
+      };
+      
+      return colors[type] || '#95a5a6';
+    }
+    
+    // Simular tráfico de red
+    function simulateTraffic() {
+      if (isSimulating) return;
+      
+      // Limpiar cualquier simulación previa
+      stopTraffic();
+      removeAllParticles();
+      
+      // Actualizar estado
+      updateStatus("Simulación de tráfico en curso. Observa las partículas rojas que se mueven a lo largo de las conexiones.", "info");
+      addLogEntry("Sistema", "Iniciando simulación de tráfico");
+      
+      isSimulating = true;
+      document.getElementById('trafficBtn').classList.add('btn-traffic');
+      
+      // Iniciar partículas de tráfico
+      startParticleTraffic();
+      
+      // Simular tráfico cada 1.5 segundos
+      trafficInterval = setInterval(() => {
+        // Red sin NAT
+        simulateNetworkTraffic(networkInstances[0], false);
+        
+        // Red con NAT
+        simulateNetworkTraffic(networkInstances[1], true);
+      }, 1500);
+    }
+    
+    // Iniciar partículas de tráfico
+    function startParticleTraffic() {
+      particleInterval = setInterval(() => {
+        // Generar partículas para ambas redes
+        createParticlesForNetwork(networkInstances[0], false);
+        createParticlesForNetwork(networkInstances[1], true);
+      }, 800);
+    }
+    
+    // Crear partículas para una red
+    function createParticlesForNetwork(network, withNAT) {
+      const edges = network.body.data.edges;
+      if (edges.length === 0) return;
+      
+      // Seleccionar una conexión aleatoria
+      const randomIndex = Math.floor(Math.random() * edges.length);
+      const edge = edges[randomIndex];
+      
+      // Obtener información de los nodos
+      const fromNode = network.body.data.nodes.get(edge.from);
+      const toNode = network.body.data.nodes.get(edge.to);
+      
+      // Obtener posiciones de los nodos usando el método getPositions
+      const positions = network.getPositions([edge.from, edge.to]);
+      const fromPos = positions[edge.from];
+      const toPos = positions[edge.to];
+      
+      if (!fromPos || !toPos) return;
+      
+      // Crear partícula
+      createParticle(network, fromPos, toPos, fromNode, toNode, withNAT);
+    }
+    
+    // Crear una partícula de tráfico
+    function createParticle(network, fromPos, toPos, fromNode, toNode, withNAT) {
+      const container = network.canvas.frame.canvas.parentNode;
+      
+      // Calcular la posición relativa al contenedor
+      const containerRect = container.getBoundingClientRect();
+      const canvasRect = network.canvas.frame.canvas.getBoundingClientRect();
+      
+      // Calcular el desplazamiento del canvas dentro del contenedor
+      const offsetX = canvasRect.left - containerRect.left;
+      const offsetY = canvasRect.top - containerRect.top;
+      
+      // Calcular las coordenadas DOM reales
+      const fromX = offsetX + fromPos.x;
+      const fromY = offsetY + fromPos.y;
+      const toX = offsetX + toPos.x;
+      const toY = offsetY + toPos.y;
+      
+      // Crear elemento de partícula
+      const particle = document.createElement('div');
+      particle.className = 'traffic-particle';
+      particle.style.left = (fromX - 6) + 'px';
+      particle.style.top = (fromY - 6) + 'px';
+      
+      container.appendChild(particle);
+      
+      // Registrar el evento en el log
+      if (withNAT) {
+        if (toNode.label.includes("NAT")) {
+          addLogEntry(fromNode.label.split('\n')[0], `Enviando datos al Router NAT`);
+        } else {
+          addLogEntry("Router NAT", `Reenviando datos a ${toNode.label.split('\n')[0]}`);
+        }
+      } else {
+        addLogEntry(fromNode.label.split('\n')[0], `Enviando datos directamente a ${toNode.label.split('\n')[0]}`);
+      }
+      
+      // Animar la partícula hacia el nodo de destino
+      const startTime = Date.now();
+      const duration = 1500;
+      
+      function animateParticle() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        if (progress < 1) {
+          const currentX = fromX + (toX - fromX) * progress;
+          const currentY = fromY + (toY - fromY) * progress;
+          
+          particle.style.left = (currentX - 6) + 'px';
+          particle.style.top = (currentY - 6) + 'px';
+          
+          requestAnimationFrame(animateParticle);
+        } else {
+          particle.remove();
+        }
+      }
+      
+      requestAnimationFrame(animateParticle);
+    }
+    
+    // Eliminar todas las partículas
+    function removeAllParticles() {
+      if (particleInterval) {
+        clearInterval(particleInterval);
+        particleInterval = null;
+      }
+      
+      document.querySelectorAll('.traffic-particle').forEach(particle => {
+        particle.remove();
+      });
+    }
+    
+    // Detener la simulación de tráfico
+    function stopTraffic() {
+      if (trafficInterval) {
+        clearInterval(trafficInterval);
+        trafficInterval = null;
+      }
+      
+      removeAllParticles();
+      
+      isSimulating = false;
+      document.getElementById('trafficBtn').classList.remove('btn-traffic');
+      
+      updateStatus("Simulación detenida. Presiona 'Simular Tráfico' para reiniciar.", "info");
+      addLogEntry("Sistema", "Simulación detenida");
+    }
+    
+    // Simular tráfico en una red específica
+    function simulateNetworkTraffic(network, withNAT) {
+      const data = network.body.data;
+      
+      // Obtener aristas existentes
+      const edges = data.edges;
+      const edgeCount = edges.length;
+      
+      if (edgeCount === 0) return;
+      
+      // Seleccionar una arista aleatoria para resaltar
+      const randomIndex = Math.floor(Math.random() * edgeCount);
+      const edge = edges[randomIndex];
+      
+      // Resaltar la arista seleccionada con efecto brillante
+      edge.color = { color: '#FF0000', highlight: '#FF0000', opacity: 1.0 };
+      edge.width = 4;
+      
+      // Actualizar la visualización
+      data.edges.update(edge);
+      
+      // Quitar el resaltado después de un tiempo
+      setTimeout(() => {
+        edge.color = { color: edge.originalColor };
+        edge.width = 2;
+        data.edges.update(edge);
+      }, 1000);
+    }
+    
+    // Añadir un nuevo dispositivo
+    function addDevice() {
+      deviceCount++;
+      initNetwork();
+      addLogEntry("Sistema", `Dispositivo añadido. Total: ${deviceCount}`);
+    }
+    
+    // Actualizar el estado
+    function updateStatus(message, type) {
+      const statusElement = document.getElementById('simulationStatus');
+      statusElement.innerHTML = `<i class="fas fa-info-circle"></i><p>${message}</p>`;
+      
+      if (type === "error") {
+        statusElement.classList.add("status-error");
+      } else {
+        statusElement.classList.remove("status-error");
+      }
+    }
+    
+    // Añadir entrada al log
+    function addLogEntry(device, action) {
+      const now = new Date();
+      const time = `${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+      
+      logEntries.unshift({
+        time: time,
+        device: device,
+        action: action
+      });
+      
+      // Mantener solo las últimas 10 entradas
+      if (logEntries.length > 10) {
+        logEntries.pop();
+      }
+      
+      updateLog();
+    }
+    
+    // Actualizar el log visual
+    function updateLog() {
+      const logContent = document.getElementById('logContent');
+      logContent.innerHTML = '';
+      
+      logEntries.forEach(entry => {
+        const logEntry = document.createElement('div');
+        logEntry.className = 'log-entry';
+        logEntry.innerHTML = `
+          <span class="log-time">[${entry.time}]</span>
+          <span class="log-device">${entry.device}:</span>
+          <span class="log-action">${entry.action}</span>
+        `;
+        logContent.appendChild(logEntry);
+      });
+    }
+    
+    // Inicializar cuando se carga la página
+    document.addEventListener('DOMContentLoaded', function() {
+      initNetwork();
+    });
+  </script>
+</body>
+</html>
