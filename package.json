@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "name": "administracion-de-s",
   "version": "1.0.0",
@@ -14,3 +15,21 @@
     "vis": "^4.21.0"
   }
 }
+=======
+{
+  "name": "administracion-de-s",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "vis": "^4.21.0"
+  }
+}
+>>>>>>> 6af9e56 (The end of the project - PHP- Using NAT- Homework)
